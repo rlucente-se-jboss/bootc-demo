@@ -1,0 +1,25 @@
+#
+# kickstart to pull down and install OCI container as the operating system
+#
+
+text
+network --bootproto=dhcp --device=link --activate
+
+# Basic partitioning
+clearpart --all --initlabel --disklabel=gpt
+reqpart --add-boot
+part / --grow --fstype xfs
+
+# Here's where we reference teh container image to install--notice the kickstart
+# has no '%packages' section! What's being installed here is a container image.
+ostreecontainer --url ${CONTAINER_REPO} --no-signature-verification
+
+firewall --disabled
+services --enabled=sshd
+
+# optionally add a user
+user --name ${EDGE_USER} --groups wheel --iscrypted --password ${EDGE_HASH}
+sshkey --username ${EDGE_USER} "${SSH_PUB_KEY}"
+
+reboot
+
