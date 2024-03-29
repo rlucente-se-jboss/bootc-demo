@@ -4,6 +4,14 @@ yeah.
 ## Demo setup
 Install a minimal CentOS Stream 9 instance.
 Copy this repo to the CentOS Stream 9 instance.
+Log into the CentOS Stream 9 instance.
+Create an SSH keypair to access the edge device. Don't set a passphrase,
+even though you really should, to make the demo a little easier.
+
+    cd ~/rhel-image-mode
+    ssh-keygen -t rsa -f ~/.ssh/id_core
+    cp ~/.ssh/id_core.pub .
+
 Edit `demo.conf` and make sure its what you want for the various variables.
 Configure the demo.
 
@@ -49,7 +57,7 @@ Create the kickstart file.
     envsubst '$CONTAINER_IMAGE $EDGE_USER $EDGE_HASH $SSH_PUB_KEY' \
         < bootc-lamp.ks.orig > bootc-lamp.ks
 
-Download the [CentOS Stream bootable ISO file](https://mirror.stream.centos.org/9-stream/BaseOS/x86_64/iso/CentOS-Stream-9-20240325.0-x86_64-boot.iso).
+Download the [CentOS Stream bootable ISO file](https://mirror.stream.centos.org/9-stream/BaseOS/x86_64/iso/CentOS-Stream-9-latest-x86_64-boot.iso).
 
 Create a bootable ISO to install the operating system by embedding the
 kickstart in the standard CentOS Stream bootable ISO.
