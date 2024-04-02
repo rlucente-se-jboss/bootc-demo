@@ -4,7 +4,7 @@
       "user": [
         {
           "name": "${EDGE_USER}",
-          "password": "${EDGE_PASS}",
+          "password": "${EDGE_HASH}",
           "key": "${SSH_PUB_KEY}",
           "groups": [
             "wheel"
