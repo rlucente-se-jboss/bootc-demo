@@ -1,47 +1,86 @@
 # The bootc demo
-yeah.
+This project shows how to create a bootable container image and then
+deploy that in several ways.
 
 ## Demo setup
-Install a minimal CentOS Stream 9 instance.
-Copy this repo to the CentOS Stream 9 instance.
-Log into the CentOS Stream 9 instance.
-Create an SSH keypair to access the edge device. Don't set a passphrase,
-even though you really should, to make the demo a little easier.
+Start with a minimal install of CentOS Stream 9 on baremetal or as a
+VM. Make sure this repository is on your host using either `git clone`
+or secure copy (`scp`).
+
+During CentOS Stream installation, configure a regular user with
+`sudo` privileges on the host. These instructions assume that this
+repository is cloned or copied to your user's home directory on the host
+(e.g. `~/rhel-image-mode`). The below instructions use that assumption.
+
+Login to the host using `ssh` and then run the following commands to
+create an SSH keypair to access the edge device. Even though you really
+should, don't set a passphrase to make the demo a little easier.
 
     cd ~/rhel-image-mode
     ssh-keygen -t rsa -f ~/.ssh/id_core
     cp ~/.ssh/id_core.pub .
 
-Edit `demo.conf` and make sure its what you want for the various variables.
-Configure the demo.
+Edit the `demo.conf` file and make sure the settings are correct. At a
+minimum, you should adjust `CONTAINER_REPO` to match the fully qualified
+name for your bootable container image.
+
+Run the following script to update the system.
 
     sudo ./register-and-update.sh
     sudo reboot
+
+After the system reboots, run the following script to install container
+and ISO image tools.
+
     sudo ./config-bootc.sh
 
+At this point, setup is complete.
+
 ## Demo
+In this demo, we'll build a bootable container image, test it, and then
+show several ways that it can be deployed.
+
 ### Build the operating system image
-Build the new operating system image.
+First, inspect the `Containerfile` and see that these are the same
+familiar commands to tailor a container. The base container image contains
+a pre-built bootable container image that can be tailored.
+
+Run the following commands to create a new bootable container image by
+layering onto the exising one.
 
     . demo.conf
     podman build -f Containerfile -t ${CONTAINER_REPO}
 
-Test the operating system by running it as a normal container.
+This build will take much less time than building from a blueprint file
+with image builder. Once the bootable container is built, you can test
+it by running it as an ordinary container with podman.
 
     podman run -d --rm --name lamp -p 8080:80 ${CONTAINER_REPO} /sbin/init
+
+The `/sbin/init` command launches systemd within the container image
+to then run all of the services. The container though is passing kernel
+calls to the host kernel rather than using its own.
+
+Use `curl` to browse to the web server within the running container -OR-
+simply use your browser to connect to the URL.
+
     curl -s http://localhost:8080 | grep -i 'image mode'
 
-Shell into the running container as well and explore the image.
+With podman, you can also remote shell into the running container to
+explore the filesystem contents and layout.
 
     podman exec -it lamp /bin/bash
     exit
 
-Stop the running container, which will also remove the container since
-the `podman run` command included the `--rm` option.
+When you're finished confirming that the bootable container is correct,
+you can stop the running container with the command below. Because the
+`podman run` command included the `--rm` option, the container will be
+removed from the host's filesystem when it stops.
 
     podman stop lamp
 
-Push the new operating system image to your registry.
+Now that you have a bootable container image, push the repository to
+your registry to make the image available to others.
 
     . demo.conf
     podman login $(echo ${CONTAINER_REPO} | cut -d/ -f1)
@@ -51,43 +90,56 @@ Make sure this container repository is publicly accessible. You may need
 to log into your registry using a browser to do this.
 
 ### Deploy the image using an ISO file
-Create the kickstart file.
+Run the following commands to prepare a kickstart file for installing
+the bootable container image to a target system. Key parameters in the
+template are substituted into the output kickstart file based on the
+settings in `demo.conf`.
 
     . demo.conf
     envsubst '$CONTAINER_REPO $EDGE_USER $EDGE_HASH $SSH_PUB_KEY' \
         < bootc-lamp.ks.orig > bootc-lamp.ks
 
-Download the [CentOS Stream bootable ISO file](https://mirror.stream.centos.org/9-stream/BaseOS/x86_64/iso/CentOS-Stream-9-latest-x86_64-boot.iso).
-From the command line, you can simply use:
+Next, we'll inject the generated kickstart file into
+a bootable ISO file. Download the [CentOS Stream bootable ISO file](https://mirror.stream.centos.org/9-stream/BaseOS/x86_64/iso/CentOS-Stream-9-latest-x86_64-boot.iso).
+You can download the file from the command line using the following
+command.
 
     curl -O https://mirror.stream.centos.org/9-stream/BaseOS/x86_64/iso/CentOS-Stream-9-latest-x86_64-boot.iso
 
 Create a bootable ISO to install the operating system by embedding the
-kickstart in the standard CentOS Stream bootable ISO.
+kickstart in the CentOS Stream bootable ISO.
 
     sudo mkksiso --ks bootc-lamp.ks CentOS-Stream-9*.iso bootc-lamp.iso
 
-Use the `bootc-lamp.iso` to boot a physical edge device or virtual
-guest. This system should be able to access your public registry to pull
-down the image.
+The modified file is named `bootc-lamp.iso`. Use that file to boot a
+physical edge device or virtual guest. Make sure this system is able to
+access your public registry to pull down the bootable container image.
 
-Browse to the IP address for the physical edge device or virtual
-guest. The address should resemble `http://<IP-Address>`.
+Test the deployment after the system reboots by browsing to the IP address
+of the physical edge device or virtual guest. The address should resemble
+`http://<IP-Address>`.
 
 ### Deploy the image by converting to a qcow2 disk image
-This example will leverage an image-builder container to convert the
-container image into a qcow2. Other image formats are available. Check the
+Bootable container images can be converted to other disk image formats
+using the bootc-image-builder tooling which is also containerized. In
+this example, we'll convert the bootable container to a qcow2
+filesystem image. Other image formats are available. Check the
 [documentation](https://github.com/osbuild/bootc-image-builder#-image-types)
 for what's currently supported.
 
-Create a configuration file to set the username, password, and SSH public
-key for a user to be added to the qcow2 disk image.
+No kickstart file is used for this conversion so a JSON configuration
+file is supplied to the bootc-image-builder tooling to add a user to
+the filesystem image. Create a configuration file to set the username,
+hashed password, and SSH public key for a user to be added to the QCOW2
+disk image.
 
     . demo.conf
-    envsubst '$EDGE_USER $EDGE_PASS $SSH_PUB_KEY' \
+    envsubst '$EDGE_USER $EDGE_HASH $SSH_PUB_KEY' \
         < config.json.orig > config.json
 
-Now use image-builder to convert our container to a qcow2 disk image.
+The following command has a lot of parameters. It passes the custom
+JSON configuration to the bootc-image-builder tooling to create a QCOW2
+filesystem image from the bootable container image we built earlier.
 
     sudo podman run --rm -it --privileged -v .:/output \
         -v ./config.json:/config.json --pull newer \
@@ -95,15 +147,21 @@ Now use image-builder to convert our container to a qcow2 disk image.
         --type qcow2 --config /config.json \
         ${CONTAINER_REPO}
 
-You can then create a virtual guest using the generated qcow2 disk image.
+You can now create a virtual guest using the QCOW2 filesystem image.
 
 ### Updating the image
-The OCI container image can be updated by editing the `Containerfile`
-and rebuilding and pushing the new container to the registry. On the
-target system, you can force an update using the command:
+The bootable container image can be updated by simply editing the
+`Containerfile`, rebuilding the container image, and then pushing the
+new bootable container image to the registry.
+
+The target system has a `bootc-fetch-apply-updates` systemd timer and
+service that periodically checks the registry and then pulls updates
+to the bootable container image to update the operating system. On the
+target system, you can force an update using the following command.
 
      sudo /usr/bin/bootc update --apply --quiet
 
-This will also periodically happen using systemd timers, specifically
-`/usr/lib/systemd/system/bootc-fetch-apply-updates.timer` which should
-be overridden.
+You can tailor the `bootc-fetch-apply-updates.timer`
+to change the timing of how often this runs by copying
+`/usr/lib/systemd/system/bootc-fetch-apply-updates.timer` to
+`/etc/systemd/system` and then editing the file.
