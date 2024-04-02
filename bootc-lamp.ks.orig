@@ -10,7 +10,7 @@ clearpart --all --initlabel --disklabel=gpt
 reqpart --add-boot
 part / --grow --fstype xfs
 
-# Here's where we reference teh container image to install--notice the kickstart
+# Here's where we reference the container image to install--notice the kickstart
 # has no '%packages' section! What's being installed here is a container image.
 ostreecontainer --url ${CONTAINER_REPO} --no-signature-verification
 
