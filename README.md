@@ -10,13 +10,14 @@ or secure copy (`scp`).
 During CentOS Stream installation, configure a regular user with
 `sudo` privileges on the host. These instructions assume that this
 repository is cloned or copied to your user's home directory on the host
-(e.g. `~/rhel-image-mode`). The below instructions use that assumption.
+(e.g. `~/bootc-demo`). The below instructions use that assumption.
 
-Login to the host using `ssh` and then run the following commands to
-create an SSH keypair to access the edge device. Even though you really
-should, don't set a passphrase to make the demo a little easier.
+Login to the host using `ssh` and then run the following commands
+to create an SSH keypair that you'll use later to access the edge
+device. Even though you really should set a passphrase, skip that when
+prompted to make the demo a little easier to run.
 
-    cd ~/rhel-image-mode
+    cd ~/bootc-demo
     ssh-keygen -t rsa -f ~/.ssh/id_core
     cp ~/.ssh/id_core.pub .
 
@@ -32,7 +33,20 @@ Run the following script to update the system.
 After the system reboots, run the following script to install container
 and ISO image tools.
 
+    cd ~/bootc-demo
     sudo ./config-bootc.sh
+
+Pull the container images for the base bootable container and the tools
+to transform into other image types.
+
+    podman pull quay.io/centos-bootc/centos-bootc:stream9
+    podman pull quay.io/centos-bootc/bootc-image-builder
+
+Download the [CentOS Stream bootable ISO file](https://mirror.stream.centos.org/9-stream/BaseOS/x86_64/iso/CentOS-Stream-9-latest-x86_64-boot.iso).
+You can download the file from the command line using the following
+command.
+
+    curl -O https://mirror.stream.centos.org/9-stream/BaseOS/x86_64/iso/CentOS-Stream-9-latest-x86_64-boot.iso
 
 At this point, setup is complete.
 
@@ -48,6 +62,7 @@ a pre-built bootable container image that can be tailored.
 Run the following commands to create a new bootable container image by
 layering onto the exising one.
 
+    cd ~/bootc-demo
     . demo.conf
     podman build -f Containerfile -t ${CONTAINER_REPO}
 
@@ -64,7 +79,7 @@ calls to the host kernel rather than using its own.
 Use `curl` to browse to the web server within the running container -OR-
 simply use your browser to connect to the URL.
 
-    curl -s http://localhost:8080 | grep -i 'image mode'
+    curl -s http://localhost:8080 | grep -i 'bootable containers'
 
 With podman, you can also remote shell into the running container to
 explore the filesystem contents and layout.
@@ -99,15 +114,9 @@ settings in `demo.conf`.
     envsubst '$CONTAINER_REPO $EDGE_USER $EDGE_HASH $SSH_PUB_KEY' \
         < bootc-lamp.ks.orig > bootc-lamp.ks
 
-Next, we'll inject the generated kickstart file into
-a bootable ISO file. Download the [CentOS Stream bootable ISO file](https://mirror.stream.centos.org/9-stream/BaseOS/x86_64/iso/CentOS-Stream-9-latest-x86_64-boot.iso).
-You can download the file from the command line using the following
-command.
-
-    curl -O https://mirror.stream.centos.org/9-stream/BaseOS/x86_64/iso/CentOS-Stream-9-latest-x86_64-boot.iso
-
-Create a bootable ISO to install the operating system by embedding the
-kickstart in the CentOS Stream bootable ISO.
+Next, we'll inject the generated kickstart file into a bootable ISO
+file. Create a bootable ISO to install the operating system by embedding
+the kickstart in the CentOS Stream bootable ISO.
 
     sudo mkksiso --ks bootc-lamp.ks CentOS-Stream-9*.iso bootc-lamp.iso
 
