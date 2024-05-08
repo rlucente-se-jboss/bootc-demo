@@ -19,11 +19,12 @@ prompted to make the demo a little easier to run.
 
     cd ~/bootc-demo
     ssh-keygen -t rsa -f ~/.ssh/id_core
-    cp ~/.ssh/id_core.pub .
+    ln -s ~/.ssh/id_core.pub .
 
 Edit the `demo.conf` file and make sure the settings are correct. At a
 minimum, you should adjust `CONTAINER_REPO` to match the fully qualified
-name for your bootable container image.
+name for your bootable container repository. Don't include the optional
+tag.
 
 Run the following script to update the system.
 
@@ -64,17 +65,17 @@ layering onto the exising one.
 
     cd ~/bootc-demo
     . demo.conf
-    podman build -f Containerfile -t ${CONTAINER_REPO}
+    podman build -f Containerfile -t $CONTAINER_REPO:v1
 
 This build will take much less time than building from a blueprint file
 with image builder. Once the bootable container is built, you can test
 it by running it as an ordinary container with podman.
 
-    podman run -d --rm --name lamp -p 8080:80 ${CONTAINER_REPO} /sbin/init
+    podman run -d --rm --name lamp -p 8080:80 $CONTAINER_REPO:v1 /sbin/init
 
-The `/sbin/init` command launches systemd within the container image
-to then run all of the services. The container though is passing kernel
-calls to the host kernel rather than using its own.
+The `/sbin/init` command launches systemd within the container to then
+run all of the services. The container though is passing kernel calls
+to the host kernel rather than using its own kernel.
 
 Use `curl` to browse to the web server within the running container -OR-
 simply use your browser to connect to the URL.
@@ -98,11 +99,17 @@ Now that you have a bootable container image, push the repository to
 your registry to make the image available to others.
 
     . demo.conf
-    podman login $(echo ${CONTAINER_REPO} | cut -d/ -f1)
-    podman push ${CONTAINER_REPO}
+    podman login $(echo $CONTAINER_REPO | cut -d/ -f1)
+    podman push $CONTAINER_REPO:v1
+
+Also, push this image with the `prod` tag since that's what we'll want
+to run on our target edge devices.
+
+    podman tag $CONTAINER_REPO:v1 $CONTAINER_REPO:prod
+    podman push $CONTAINER_REPO:prod
 
 Make sure this container repository is publicly accessible. You may need
-to log into your registry using a browser to do this.
+to log into your registry using a browser to change the accessibility.
 
 ### Deploy the image using an ISO file
 Run the following commands to prepare a kickstart file for installing
@@ -127,6 +134,62 @@ access your public registry to pull down the bootable container image.
 Test the deployment after the system reboots by browsing to the IP address
 of the physical edge device or virtual guest. The address should resemble
 `http://<IP-Address>`.
+
+### Updating the image
+The bootable container image can be updated by simply editing or creating
+a new `Containerfile`, rebuilding the container image, and then pushing
+the new bootable container image to the registry.
+
+Let's create `v2` of our container by adding a new package `strace`. In
+the same directory, create the file `NewContainerfile`.
+
+    printf "FROM $CONTAINER_REPO:v1\nRUN dnf -y install strace" \
+        > NewContainerfile
+
+Build the new image and tag it as `v2`.
+
+    podman build -f NewContainerfile -t $CONTAINER_REPO:v2
+
+Test the new image by running it as a container locally.
+
+    podman run -d --rm --name lamp -p 8080:80 $CONTAINER_REPO:v2
+    podman exec -it lamp /bin/bash
+
+Within the container, run the following command to confirm that the
+`strace` executable was added.
+
+    ls /usr/bin/strace
+
+Exit the container and then stop it.
+
+    exit
+    podman stop lamp
+
+Now that the container image has been updated and tested, push the image
+to the registry.
+
+    podman push $CONTAINER_REPO:v2
+
+Tag the new container as `prod` and push that to the registry as well.
+
+    podman tag $CONTAINER_REPO:v2 $CONTAINER_REPO:prod
+    podman push $CONTAINER_REPO:prod
+
+The edge system that was recenty installed has a
+`bootc-fetch-apply-updates` systemd timer and service that periodically
+checks the registry and then pulls updates to the bootable container. This
+mechanism can be used to update the operating system, simply by pushing a
+new image to the registry.
+
+Instead of waiting for the timer, on the target system you can force an
+update using the following command.
+
+     sudo /usr/bin/bootc update --apply --quiet
+
+You can tailor the `bootc-fetch-apply-updates.timer`
+to change the timing of how often this runs by copying
+`/usr/lib/systemd/system/bootc-fetch-apply-updates.timer` to
+`/etc/systemd/system` and then editing the file.
 
 ### Deploy the image by converting to a qcow2 disk image
 Bootable container images can be converted to other disk image formats
@@ -154,23 +217,6 @@ filesystem image from the bootable container image we built earlier.
         -v ./config.json:/config.json --pull newer \
         quay.io/centos-bootc/bootc-image-builder \
         --type qcow2 --config /config.json \
-        ${CONTAINER_REPO}
+        $CONTAINER_REPO:prod
 
 You can now create a virtual guest using the QCOW2 filesystem image.
-
-### Updating the image
-The bootable container image can be updated by simply editing the
-`Containerfile`, rebuilding the container image, and then pushing the
-new bootable container image to the registry.
-
-The target system has a `bootc-fetch-apply-updates` systemd timer and
-service that periodically checks the registry and then pulls updates
-to the bootable container image to update the operating system. On the
-target system, you can force an update using the following command.
-
-     sudo /usr/bin/bootc update --apply --quiet
-
-You can tailor the `bootc-fetch-apply-updates.timer`
-to change the timing of how often this runs by copying
-`/usr/lib/systemd/system/bootc-fetch-apply-updates.timer` to
-`/etc/systemd/system` and then editing the file.
