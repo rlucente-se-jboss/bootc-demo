@@ -12,7 +12,7 @@ part / --grow --fstype xfs
 
 # Here's where we reference the container image to install--notice the kickstart
 # has no '%packages' section! What's being installed here is a container image.
-ostreecontainer --url ${CONTAINER_REPO} --no-signature-verification
+ostreecontainer --url ${CONTAINER_REPO}:prod --no-signature-verification
 
 firewall --disabled
 services --enabled=sshd
