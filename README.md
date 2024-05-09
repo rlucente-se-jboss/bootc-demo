@@ -158,7 +158,7 @@ Test the new image by running it as a container locally.
 Within the container, run the following command to confirm that the
 `strace` executable was added.
 
-    ls /usr/bin/strace
+    which strace
 
 Exit the container and then stop it.
 
@@ -184,7 +184,7 @@ new image to the registry.
 Instead of waiting for the timer, on the target system you can force an
 update using the following command.
 
-     sudo /usr/bin/bootc update --apply --quiet
+     sudo bootc update --apply --quiet
 
 You can tailor the `bootc-fetch-apply-updates.timer`
 to change the timing of how often this runs by copying
