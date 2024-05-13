@@ -1,6 +1,6 @@
 ** THIS IS A WORK IN PROGRESS **
 
-# The bootc demo
+# The RHEL Image Mode demo
 This project shows how to create a bootable container image with RHEL
 Image Mode and then deploy that in several ways.
 
@@ -36,7 +36,7 @@ options in the `demo.conf` file are shown here.
 | EDGE_USER | The name of a user on the target edge device |
 | EDGE_PASS | The plaintext password for the user on the target edge device |
 | BOOT_PASS | A custom grub2 boot password for the target edge device |
-| BOOT_ISO | Minimal boot ISO to create a custom ISO with additional kernel command line arguments and a custom kickstart file |
+| BOOT_ISO | Minimal boot ISO used to create a custom ISO with additional kernel command line arguments and a custom kickstart file |
 | CONTAINER_REPO | The fully qualified name for your bootable container repository |
 | HOSTPORT | The port mapped to the web server in the bootable container for testing |
 
