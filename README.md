@@ -1,3 +1,5 @@
+** THIS IS A WORK IN PROGRESS **
+
 # The bootc demo
 This project shows how to create a bootable container image with RHEL
 Image Mode and then deploy that in several ways.
