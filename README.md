@@ -1,15 +1,15 @@
 # The bootc demo
-This project shows how to create a bootable container image and then
-deploy that in several ways.
+This project shows how to create a bootable container image with RHEL
+Image Mode and then deploy that in several ways.
 
 ## Demo setup
-Start with a minimal install of CentOS Stream 9 on baremetal or as a
-VM. Make sure this repository is on your host using either `git clone`
-or secure copy (`scp`).
+Start with a minimal install of RHEL 9.4+ on either baremetal or as a
+VM. Make sure this repository is on your RHEL 9.4+ instance using either
+`git clone` or secure copy (`scp`).
 
-During CentOS Stream installation, configure a regular user with
-`sudo` privileges on the host. These instructions assume that this
-repository is cloned or copied to your user's home directory on the host
+During RHEL installation, configure a regular user with `sudo`
+privileges on the host. These instructions assume that this repository
+is cloned or copied to your user's home directory on the host
 (e.g. `~/bootc-demo`). The below instructions use that assumption.
 
 Login to the host using `ssh` and then run the following commands
@@ -22,11 +22,25 @@ prompted to make the demo a little easier to run.
     ln -s ~/.ssh/id_core.pub .
 
 Edit the `demo.conf` file and make sure the settings are correct. At a
-minimum, you should adjust `CONTAINER_REPO` to match the fully qualified
-name for your bootable container repository. Don't include the optional
-tag.
+minimum, you should adjust the credentials for simple content access and
+the `CONTAINER_REPO` to match the fully qualified name for your bootable
+container repository. Don't include the optional tag. The full list of
+options in the `demo.conf` file are shown here.
 
-Run the following script to update the system.
+| Option | Description |
+| ------ | ----------- |
+| SCA_USER | Your username for Red Hat Simple Content Access |
+| SCA_PASS | Your password for Red Hat Simple Content Access |
+| EDGE_USER | The name of a user on the target edge device |
+| EDGE_PASS | The plaintext password for the user on the target edge device |
+| BOOT_PASS | A custom grub2 boot password for the target edge device |
+| BOOT_ISO | Minimal boot ISO to create a custom ISO with additional kernel command line arguments and a custom kickstart file |
+| CONTAINER_REPO | The fully qualified name for your bootable container repository |
+| HOSTPORT | The port mapped to the web server in the bootable container for testing |
+
+Make sure to download the `BOOT_ISO` file (e.g. rhel-9.4-x86_64-boot.iso)
+to the local copy of this repository on your RHEL instance
+(e.g. ~/bootc-demo). Run the following script to update the system.
 
     sudo ./register-and-update.sh
     sudo reboot
@@ -220,3 +234,4 @@ filesystem image from the bootable container image we built earlier.
         $CONTAINER_REPO:prod
 
 You can now create a virtual guest using the QCOW2 filesystem image.
+
