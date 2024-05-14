@@ -29,16 +29,16 @@ the `CONTAINER_REPO` to match the fully qualified name for your bootable
 container repository. Don't include the optional tag. The full list of
 options in the `demo.conf` file are shown here.
 
-| Option | Description |
-| ------ | ----------- |
-| SCA_USER | Your username for Red Hat Simple Content Access |
-| SCA_PASS | Your password for Red Hat Simple Content Access |
-| EDGE_USER | The name of a user on the target edge device |
-| EDGE_PASS | The plaintext password for the user on the target edge device |
-| BOOT_PASS | A custom grub2 boot password for the target edge device |
-| BOOT_ISO | Minimal boot ISO used to create a custom ISO with additional kernel command line arguments and a custom kickstart file |
+| Option         | Description |
+| -------------- | ----------- |
+| SCA_USER       | Your username for Red Hat Simple Content Access |
+| SCA_PASS       | Your password for Red Hat Simple Content Access |
+| EDGE_USER      | The name of a user on the target edge device |
+| EDGE_PASS      | The plaintext password for the user on the target edge device |
+| BOOT_PASS      | A custom grub2 boot password for the target edge device |
+| BOOT_ISO       | Minimal boot ISO used to create a custom ISO with additional kernel command line arguments and a custom kickstart file |
 | CONTAINER_REPO | The fully qualified name for your bootable container repository |
-| HOSTPORT | The port mapped to the web server in the bootable container for testing |
+| HOSTPORT       | The port mapped to the web server in the bootable container for testing |
 
 Make sure to download the `BOOT_ISO` file (e.g. rhel-9.4-x86_64-boot.iso)
 to the local copy of this repository on your RHEL instance
