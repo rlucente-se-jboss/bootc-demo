@@ -225,6 +225,11 @@ disk image.
     envsubst '$EDGE_USER $EDGE_HASH $SSH_PUB_KEY' \
         < config.json.orig > config.json
 
+The conversion container runs as root, so you'll need to login,
+as root, to `registry.redhat.io` using your [Red Hat customer portal](https://access.redhat.com) credentials.
+
+    sudo podman login registry.redhat.io
+
 The following command has a lot of parameters. It passes the custom
 JSON configuration to the bootc-image-builder tooling to create a QCOW2
 filesystem image from the bootable container image we built earlier.
