@@ -52,13 +52,19 @@ and ISO image tools.
     sudo ./config-bootc.sh
 
 Login to Red Hat's container registry using your Red Hat customer portal
-credentials and then pull the container images for the base bootable
-container and the tools to transform into other image types.
+credentials and then pull the container image for the base bootable
+container.
 
     podman login registry.redhat.io
-
     podman pull registry.redhat.io/rhel9/rhel-bootc:latest
-    podman pull registry.redhat.io/rhel9/bootc-image-builder
+
+The conversion container runs as root, so you'll need to login
+as root to `registry.redhat.io` using your [Red Hat customer
+portal](https://access.redhat.com) credentials to pull the tools to
+transform into other image types.
+
+    sudo podman login registry.redhat.io
+    sudo podman pull registry.redhat.io/rhel9/bootc-image-builder
 
 At this point, setup is complete.
 
@@ -222,11 +228,6 @@ disk image.
     . demo.conf
     envsubst '$EDGE_USER $EDGE_HASH $SSH_PUB_KEY' \
         < config.json.orig > config.json
-
-The conversion container runs as root, so you'll need to login,
-as root, to `registry.redhat.io` using your [Red Hat customer portal](https://access.redhat.com) credentials.
-
-    sudo podman login registry.redhat.io
 
 The following command has a lot of parameters. It passes the custom
 JSON configuration to the bootc-image-builder tooling to create a QCOW2
