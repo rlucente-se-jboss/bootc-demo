@@ -53,17 +53,14 @@ and ISO image tools.
     cd ~/bootc-demo
     sudo ./config-bootc.sh
 
-Pull the container images for the base bootable container and the tools
-to transform into other image types.
+Login to Red Hat's container registry using your Red Hat customer portal
+credentials and then pull the container images for the base bootable
+container and the tools to transform into other image types.
 
-    podman pull quay.io/centos-bootc/centos-bootc:stream9
-    podman pull quay.io/centos-bootc/bootc-image-builder
+    podman login registry.redhat.io
 
-Download the [CentOS Stream bootable ISO file](https://mirror.stream.centos.org/9-stream/BaseOS/x86_64/iso/CentOS-Stream-9-latest-x86_64-boot.iso).
-You can download the file from the command line using the following
-command.
-
-    curl -O https://mirror.stream.centos.org/9-stream/BaseOS/x86_64/iso/CentOS-Stream-9-latest-x86_64-boot.iso
+    podman pull registry.redhat.io/rhel9/rhel-bootc:latest
+    podman pull registry.redhat.io/rhel9/bootc-image-builder
 
 At this point, setup is complete.
 
@@ -89,6 +86,14 @@ it by running it as an ordinary container with podman.
 
     podman run -d --rm --name lamp -p 8080:80 $CONTAINER_REPO:v1 /sbin/init
 
+NB: If you are running containers within your bootable container
+image, you'll need to elevate privileges to test "containers within
+containers". Specifically, the above command would instead look like:
+
+    sudo podman run -d --rm --name lamp -p 8080:80 \
+        --privileged --cap-add SYS_ADMIN --security-opt unmask=all \
+        $CONTAINER_REPO:v1 /sbin/init
+
 The `/sbin/init` command launches systemd within the container to then
 run all of the services. The container though is passing kernel calls
 to the host kernel rather than using its own kernel.
@@ -96,7 +101,7 @@ to the host kernel rather than using its own kernel.
 Use `curl` to browse to the web server within the running container -OR-
 simply use your browser to connect to the URL.
 
-    curl -s http://localhost:8080 | grep -i 'bootable containers'
+    curl -s http://localhost:8080 | grep -i 'rhel image mode'
 
 With podman, you can also remote shell into the running container to
 explore the filesystem contents and layout.
@@ -111,8 +116,8 @@ removed from the host's filesystem when it stops.
 
     podman stop lamp
 
-Now that you have a bootable container image, push the repository to
-your registry to make the image available to others.
+Now that you have a tested bootable container image, push the repository
+to your registry to make the image available to others.
 
     . demo.conf
     podman login $(echo $CONTAINER_REPO | cut -d/ -f1)
@@ -128,22 +133,17 @@ Make sure this container repository is publicly accessible. You may need
 to log into your registry using a browser to change the accessibility.
 
 ### Deploy the image using an ISO file
-Run the following commands to prepare a kickstart file for installing
-the bootable container image to a target system. Key parameters in the
-template are substituted into the output kickstart file based on the
-settings in `demo.conf`.
+Run the following command to generate an installable ISO file for your
+bootable container. This command prepares a kickstart file to pull
+the bootable container image from the registry and install that to the
+filesystem on the target system. This kickstart file is then injected
+into the RHEL boot ISO you downloaded earlier. It's important to note
+that the content for the target system is actually in the bootable
+container image in the registry.
 
-    . demo.conf
-    envsubst '$CONTAINER_REPO $EDGE_USER $EDGE_HASH $SSH_PUB_KEY' \
-        < bootc-lamp.ks.orig > bootc-lamp.ks
+    sudo ./gen-iso.sh
 
-Next, we'll inject the generated kickstart file into a bootable ISO
-file. Create a bootable ISO to install the operating system by embedding
-the kickstart in the CentOS Stream bootable ISO.
-
-    sudo mkksiso --ks bootc-lamp.ks CentOS-Stream-9*.iso bootc-lamp.iso
-
-The modified file is named `bootc-lamp.iso`. Use that file to boot a
+The generated file is named `bootc-lamp.iso`. Use that file to boot a
 physical edge device or virtual guest. Make sure this system is able to
 access your public registry to pull down the bootable container image.
 
@@ -231,7 +231,7 @@ filesystem image from the bootable container image we built earlier.
 
     sudo podman run --rm -it --privileged -v .:/output \
         -v ./config.json:/config.json --pull newer \
-        quay.io/centos-bootc/bootc-image-builder \
+        registry.redhat.io/rhel9/bootc-image-builder \
         --type qcow2 --config /config.json \
         $CONTAINER_REPO:prod
 
