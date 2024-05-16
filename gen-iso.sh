@@ -38,7 +38,7 @@ bootloader --append="$BOOT_ARGS" --iscrypted --password=$BOOT_HASH
 
 # Here's where we reference the container image to install--notice the kickstart
 # has no '%packages' section! What's being installed here is a container image.
-ostreecontainer --url ${CONTAINER_REPO}:prod --no-signature-verification
+ostreecontainer --url ${CONTAINER_REPO}:prod
 
 firewall --enabled --ssh --http
 services --enabled=sshd
