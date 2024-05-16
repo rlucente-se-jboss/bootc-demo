@@ -40,7 +40,7 @@ bootloader --append="$BOOT_ARGS" --iscrypted --password=$BOOT_HASH
 # has no '%packages' section! What's being installed here is a container image.
 ostreecontainer --url ${CONTAINER_REPO}:prod --no-signature-verification
 
-firewall --disabled
+firewall --enabled --ssh --http
 services --enabled=sshd
 
 # optionally add a user
