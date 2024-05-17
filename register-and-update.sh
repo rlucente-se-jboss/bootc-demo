@@ -9,7 +9,6 @@ subscription-manager register \
 subscription-manager role --set="Red Hat Enterprise Linux Server"
 subscription-manager service-level --set="Self-Support"
 subscription-manager usage --set="Development/Test"
-subscription-manager attach
 
 dnf -y update
 dnf -y clean all
