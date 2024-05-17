@@ -3,7 +3,7 @@ FROM registry.redhat.io/rhel9/rhel-bootc:latest
 # install the LAMP components
 RUN dnf module enable -y php:8.2 nginx:1.22 \
     && dnf install -y httpd mariadb mariadb-server php-fpm php-mysqlnd \
-           scap-security-guide \
+           firewalld scap-security-guide \
     && dnf clean all
 
 # start the services automatically on boot
