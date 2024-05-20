@@ -10,7 +10,15 @@
             "wheel"
           ]
         }
-      ]
+      ],
+      "firewall": {
+        "services": {
+          "enabled": [
+            "ssh",
+            "http"
+          ]
+        }
+      }
     }
   }
 }
