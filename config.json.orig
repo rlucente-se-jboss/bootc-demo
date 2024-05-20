@@ -18,6 +18,9 @@
             "http"
           ]
         }
+      },
+      "kernel": {
+       "append": "fips=1"
       }
     }
   }
