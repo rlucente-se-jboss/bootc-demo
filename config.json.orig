@@ -11,16 +11,8 @@
           ]
         }
       ],
-      "firewall": {
-        "services": {
-          "enabled": [
-            "ssh",
-            "http"
-          ]
-        }
-      },
       "kernel": {
-       "append": "fips=1"
+        "append": "${BOOT_ARGS}"
       }
     }
   }
