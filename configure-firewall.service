@@ -1,0 +1,14 @@
+[Unit]
+Description=Configure firewall for required services on first boot
+ConditionPathExists=/etc/configure-firewall
+Wants=network.target
+After=firewalld.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/firewall-cmd --permanent --add-service=http --add-service=ssh
+ExecStartPost=/usr/bin/firewall-cmd --reload
+ExecStartPost=/usr/bin/rm -f /etc/configure-firewall
+
+[Install]
+WantedBy=multi-user.target

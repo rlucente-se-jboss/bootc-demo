@@ -1,0 +1,11 @@
+[Unit]
+Description=Properly configure FIPS crypto policies on first boot
+ConditionPathExists=/etc/configure-fips-mode
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/fips-mode-setup --enable --no-bootcfg
+ExecStartPost=/usr/bin/rm -f /etc/configure-fips-mode
+
+[Install]
+WantedBy=multi-user.target
