@@ -33,7 +33,11 @@ options in the `demo.conf` file are shown here.
 | SCA_PASS       | Your password for Red Hat Simple Content Access |
 | EDGE_USER      | The name of a user on the target edge device |
 | EDGE_PASS      | The plaintext password for the user on the target edge device |
+| EDGE_HASH      | A SHA-512 hash of the EDGE_PASS parameter |
+| SSH_PUB_KEY    | The SSH public key of a suer on the target edge device |
 | BOOT_PASS      | A custom grub2 boot password for the target edge device |
+| BOOT_HASH      | The hash of BOOT_PASS using the `grub2-mkpasswd-pbkdf2` command |
+| BOOT_ARGS      | Kernel command line arguments applied at boot time |
 | BOOT_ISO       | Minimal boot ISO used to create a custom ISO with additional kernel command line arguments and a custom kickstart file |
 | CONTAINER_REPO | The fully qualified name for your bootable container repository |
 | HOSTPORT       | The port mapped to the web server in the bootable container for testing |
