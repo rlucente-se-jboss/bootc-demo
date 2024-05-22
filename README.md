@@ -226,7 +226,7 @@ hashed password, and SSH public key for a user to be added to the QCOW2
 disk image.
 
     . demo.conf
-    envsubst '$EDGE_USER $EDGE_HASH $SSH_PUB_KEY' \
+    envsubst '$BOOT_ARGS $EDGE_USER $EDGE_HASH $SSH_PUB_KEY' \
         < config.json.orig > config.json
 
 The following command has a lot of parameters. It passes the custom
