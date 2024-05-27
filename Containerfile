@@ -17,6 +17,9 @@ COPY configure-firewall.service /etc/systemd/system/
 # start the services automatically on boot
 RUN systemctl enable httpd mariadb php-fpm sshd firewalld configure-fips-mode configure-firewall
 
+# add the tailored STIG rules
+COPY ssg-rhel9-ds-tailoring-high-only.xml /usr/share/xml/scap/ssg/content/
+
 # create an awe-inspiring home page!
 RUN echo '<h1 style="text-align:center;">Welcome to RHEL Image Mode</h1><?php phpinfo();?>' >> /var/www/html/index.php
 
