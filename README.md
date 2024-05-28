@@ -81,14 +81,14 @@ First, inspect the `Containerfile` and see that these are the same
 familiar commands to tailor a container. The base container image contains
 a pre-built bootable container image that can be tailored.
 
-Next, generate a tailored DISA STIG checklist file containing the
+Next, create a tailored DISA STIG checklist file containing the
 CAT I rules only. This step helps users who are seeking DISA STIG
 compliance. The tailored checklist will be copied into the bootable
 container image so compliance can be checked after installation.
 
     cd ~/bootc-demo
     . demo.conf
-    ./generate-tailor-file.sh
+    ./create-tailor-file.sh
 
 Run the following commands to create a new bootable container image by
 layering onto the exising one.
