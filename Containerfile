@@ -20,6 +20,22 @@ RUN systemctl enable httpd mariadb php-fpm sshd firewalld configure-fips-mode co
 # add the tailored STIG rules
 COPY ssg-rhel9-ds-tailoring-high-only.xml /usr/share/xml/scap/ssg/content/
 
+# add configuration to meet CAT I STIG rules
+#     xccdf_org.ssgproject.content_rule_ensure_gpgcheck_local_packages
+#     xccdf_org.ssgproject.content_rule_disable_ctrlaltdel_burstaction
+#     xccdf_org.ssgproject.content_rule_disable_ctrlaltdel_reboot
+#     xccdf_org.ssgproject.content_rule_no_empty_passwords
+#     xccdf_org.ssgproject.content_rule_grub2_admin_username
+#     xccdf_org.ssgproject.content_rule_sshd_disable_empty_passwords
+RUN    echo "localpkg_gpgcheck = 1" >> /etc/dnf/dnf.conf \
+    && sed -i 's/^#\(CtrlAltDelBurstAction=\)..*/\1none/g' /etc/systemd/system.conf \
+    && rm -f /etc/systemd/system/ctrl-alt-del.target \
+    && systemctl mask ctrl-alt-del.target \
+    && sed -i 's/nullok//g' /etc/pam.d/system-auth \
+    && sed -i 's/nullok//g' /etc/pam.d/password-auth \
+    && sed -i 's/\(set superusers=\).*/\1"someuser"/g' /etc/grub.d/01_users \
+    && echo "PermitEmptyPasswords no" > /etc/ssh/sshd_config.d/00-complianceascode-hardening.conf
+
 # create an awe-inspiring home page!
 RUN echo '<h1 style="text-align:center;">Welcome to RHEL Image Mode</h1><?php phpinfo();?>' >> /var/www/html/index.php
 
