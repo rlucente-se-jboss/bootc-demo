@@ -252,3 +252,14 @@ filesystem image from the bootable container image we built earlier.
 
 You can now create a virtual guest using the QCOW2 filesystem image.
 
+### Evaluate the installed edge device against the CAT I STIG controls
+Evaluate the high severity STIG controls by using the tailoring file. On
+the edge device, run the following command to generate an HTML report.
+
+    sudo oscap xccdf eval \
+        --fetch-remote-resources \
+        --report stig_report_post_remediation.html \
+        --tailoring-file /usr/share/xml/scap/ssg/content/ssg-rhel9-ds-tailoring-high-only.xml \
+        --profile xccdf_org.ssgproject.content_profile_stig_high_only \
+        /usr/share/xml/scap/ssg/content/ssg-rhel9-ds.xml
+
