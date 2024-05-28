@@ -5,7 +5,7 @@
 [[ $EUID -ne 0 ]] && exit_on_error "Must run as root"
 [[ -z $SUDO_USER ]] && exit_on_error "Must run using sudo"
 
-dnf -y install container-tools lorax scap-security-guide xmlstarlet scap-utils
+dnf -y install container-tools lorax scap-security-guide xmlstarlet openscap-utils
 
 sudo -u $SUDO_USER mkdir -p /home/$SUDO_USER/.config/containers
 sudo -u $SUDO_USER cat > /home/$SUDO_USER/.config/containers/registries.conf <<EOF
