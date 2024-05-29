@@ -42,7 +42,7 @@ options in the `demo.conf` file are shown here.
 | CONTAINER_REPO | The fully qualified name for your bootable container repository |
 | HOSTPORT       | The port mapped to the web server in the bootable container for testing |
 
-Make sure to download the `BOOT_ISO` file (e.g. [rhel-9.4-x86_64-boot.iso](https://access.redhat.com/downloads/content/rhel)
+Make sure to download the `BOOT_ISO` file, e.g. [rhel-9.4-x86_64-boot.iso](https://access.redhat.com/downloads/content/rhel)
 to the local copy of this repository on your RHEL instance
 (e.g. ~/bootc-demo). Run the following script to update the system.
 
