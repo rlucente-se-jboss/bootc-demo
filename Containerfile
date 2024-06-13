@@ -17,6 +17,9 @@ COPY configure-firewall.service /etc/systemd/system/
 # start the services automatically on boot
 RUN systemctl enable httpd mariadb php-fpm sshd firewalld configure-fips-mode configure-firewall
 
+# mask the kdump service
+RUN systemctl mask kdump.service
+
 # add the tailored STIG rules
 COPY ssg-rhel9-ds-tailoring-high-only.xml /usr/share/xml/scap/ssg/content/
 
