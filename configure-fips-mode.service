@@ -4,8 +4,11 @@ ConditionPathExists=/etc/configure-fips-mode
 
 [Service]
 Type=oneshot
+# RHEL-09-672030 RHEL 9 must implement DOD-approved TLS encryption in the GnuTLS package
 ExecStart=/usr/bin/fips-mode-setup --enable --no-bootcfg
+ExecStartPost=/usr/bin/sed -i 's/^\(Ciphers \)..*/\1aes256-gcm@openssh.com,chacha20-poly1305@openssh.com,aes256-ctr,aes128-gcm@openssh.com,aes128-ctr/g' /etc/crypto-policies/back-ends/openssh.config
 ExecStartPost=/usr/bin/rm -f /etc/configure-fips-mode
+ExecStartPost=/usr/sbin/reboot
 
 [Install]
 WantedBy=multi-user.target
