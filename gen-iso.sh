@@ -18,9 +18,6 @@ clearpart --all --initlabel --disklabel=gpt
 reqpart --add-boot
 part / --grow --fstype xfs
 
-# bootloader with crypted password and kernel args
-bootloader --append="$BOOT_ARGS" --iscrypted --password=$BOOT_HASH
-
 # Here's where we reference the container image to install--notice the kickstart
 # has no '%packages' section! What's being installed here is a container image.
 ostreecontainer --url ${CONTAINER_REPO}:prod
