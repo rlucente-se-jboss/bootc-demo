@@ -35,8 +35,6 @@ options in the `demo.conf` file are shown here.
 | EDGE_PASS      | The plaintext password for the user on the target edge device |
 | EDGE_HASH      | A SHA-512 hash of the EDGE_PASS parameter |
 | SSH_PUB_KEY    | The SSH public key of a suer on the target edge device |
-| BOOT_PASS      | A custom grub2 boot password for the target edge device |
-| BOOT_HASH      | The hash of BOOT_PASS using the `grub2-mkpasswd-pbkdf2` command |
 | BOOT_ARGS      | Kernel command line arguments applied at boot time |
 | BOOT_ISO       | Minimal boot ISO used to create a custom ISO with additional kernel command line arguments and a custom kickstart file |
 | CONTAINER_REPO | The fully qualified name for your bootable container repository |
@@ -152,15 +150,17 @@ Run the following command to generate an installable ISO file for your
 bootable container. This command prepares a kickstart file to pull
 the bootable container image from the registry and install that to the
 filesystem on the target system. This kickstart file is then injected
-into the RHEL boot ISO you downloaded earlier. It's important to note
-that the content for the target system is actually in the bootable
+into the standard RHEL boot ISO you downloaded earlier. It's important to
+note that the content for the target system is actually in the bootable
 container image in the registry.
 
     sudo ./gen-iso.sh
 
-The generated file is named `bootc-lamp.iso`. Use that file to boot a
-physical edge device or virtual guest. Make sure this system is able to
-access your public registry to pull down the bootable container image.
+The generated file is named `bootc-lamp.iso`. Use that file to boot
+a physical edge device or virtual guest. Ensure that you use the UEFI
+firmware option for a virtual guest or install to a physical edge device
+that supports UEFI. Make sure this system is able to access your public
+registry to pull down the bootable container image.
 
 Test the deployment after the system reboots by browsing to the IP address
 of the physical edge device or virtual guest. The address should resemble
@@ -262,6 +262,13 @@ the edge device, run the following command to generate an HTML report.
         --tailoring-file /usr/share/xml/scap/ssg/content/ssg-rhel9-ds-tailoring-high-only.xml \
         --profile xccdf_org.ssgproject.content_profile_stig_high_only \
         /usr/share/xml/scap/ssg/content/ssg-rhel9-ds.xml
+
+The CAT I STIG items should all pass except for encrypted partitions. You
+can modify the generated kickstart file in the `gen-iso.sh` shell script
+to encrypt the boot partition but you'll also need to either include the
+passphrase as plain text in the kickstart file or supply it manually
+at installation. You'll also need to work out a method to provide the
+passphrase on subsequent reboots.
 
 You can then download the generated `stig_report_pre_remediation.html`
 file to review it.
