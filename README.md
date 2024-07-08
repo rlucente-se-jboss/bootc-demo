@@ -258,7 +258,7 @@ the edge device, run the following command to generate an HTML report.
 
     sudo oscap xccdf eval \
         --fetch-remote-resources \
-        --report stig_report_pre_remediation.html \
+        --report stig_report_post_remediation.html \
         --tailoring-file /usr/share/xml/scap/ssg/content/ssg-rhel9-ds-tailoring-high-only.xml \
         --profile xccdf_org.ssgproject.content_profile_stig_high_only \
         /usr/share/xml/scap/ssg/content/ssg-rhel9-ds.xml
@@ -270,5 +270,5 @@ passphrase as plain text in the kickstart file or supply it manually
 at installation. You'll also need to work out a method to provide the
 passphrase on subsequent reboots.
 
-You can then download the generated `stig_report_pre_remediation.html`
+You can then download the generated `stig_report_post_remediation.html`
 file to review it.
