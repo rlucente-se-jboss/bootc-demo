@@ -1,6 +1,7 @@
 [Unit]
 Description=Properly configure FIPS crypto policies on first boot
 ConditionPathExists=/etc/configure-fips-mode
+ConditionDirectoryNotEmpty=/boot
 
 [Service]
 Type=oneshot

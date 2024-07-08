@@ -1,6 +1,7 @@
 [Unit]
 Description=Configure firewall for required services on first boot
 ConditionPathExists=/etc/configure-firewall
+ConditionDirectoryNotEmpty=/boot
 Wants=network.target
 After=firewalld.service
 
