@@ -22,10 +22,8 @@ prompted to make the demo a little easier to run.
     ln -s ~/.ssh/id_core.pub .
 
 Edit the `demo.conf` file and make sure the settings are correct. At a
-minimum, you should adjust the credentials for simple content access and
-the `CONTAINER_REPO` to match the fully qualified name for your bootable
-container repository. Don't include the optional tag. The full list of
-options in the `demo.conf` file are shown here.
+minimum, you should adjust the credentials for simple content access.
+The full list of options in the `demo.conf` file are shown here.
 
 | Option         | Description |
 | -------------- | ----------- |
@@ -38,7 +36,9 @@ options in the `demo.conf` file are shown here.
 | BOOT_ARGS      | Kernel command line arguments applied at boot time |
 | BOOT_ISO       | Minimal boot ISO used to create a custom ISO with additional kernel command line arguments and a custom kickstart file |
 | CONTAINER_REPO | The fully qualified name for your bootable container repository |
+| HOSTIP         | The routable IP address to the host |
 | HOSTPORT       | The port mapped to the web server in the bootable container for testing |
+| REGISTRYPORT   | The port for the local container registry |
 
 Make sure to download the `BOOT_ISO` file, e.g. [rhel-9.4-x86_64-boot.iso](https://access.redhat.com/downloads/content/rhel)
 to the local copy of this repository on your RHEL instance
@@ -67,6 +67,12 @@ transform into other image types.
 
     sudo podman login registry.redhat.io
     sudo podman pull registry.redhat.io/rhel9/bootc-image-builder
+
+Now that the upstream container images are cached, run this demo
+disconnected by setting up a local container registry.
+
+    cd ~/bootc-demo
+    sudo ./config-registry.sh
 
 At this point, setup is complete.
 
