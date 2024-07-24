@@ -7,14 +7,14 @@
 #
 # Setup for a local insecure registry
 #
-firewall-cmd --permanent --add-port=5000/tcp
+firewall-cmd --permanent --add-port=$REGISTRYPORT/tcp
 firewall-cmd --reload
 
 cat > /etc/containers/registries.conf.d/999-local-registry.conf <<EOF
 [[registry]]
 insecure = true
 blocked = false
-location = "$HOSTIP:5000"
+location = "$HOSTIP:$REGISTRYPORT"
 EOF
 
 #
@@ -29,7 +29,7 @@ Description=A simple local registry
 [Container]
 Image=docker.io/library/registry:2
 ContainerName=registry
-PublishPort=5000:5000
+PublishPort=$REGISTRYPORT:$REGISTRYPORT
 Volume=/var/lib/registry:/var/lib/registry:Z
 
 [Service]
