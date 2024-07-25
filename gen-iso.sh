@@ -3,7 +3,6 @@
 . $(dirname $0)/demo.conf
 
 [[ $EUID -ne 0 ]] && exit_on_error "Must run as root"
-[[ -z $SUDO_USER ]] && exit_on_error "Must run using sudo"
 
 cat > bootc-lamp.ks <<EOF
 #
@@ -28,6 +27,21 @@ sshkey --username ${EDGE_USER} "${SSH_PUB_KEY}"
 
 reboot
 EOF
+
+if [ "$REGISTRYINSECURE" = true ]
+then
+    cat >> bootc-lamp.ks << EOF1
+
+%pre
+mkdir -p /etc/containers/registries.conf.d
+cat > /etc/containers/registries.conf.d/999-local-registry.conf << EOF
+[[registry]]
+location = "$HOSTIP:$REGISTRYPORT"
+insecure = true
+EOF
+%end
+EOF1
+fi
 
 rm -f bootc-lamp.iso
 mkksiso --ks bootc-lamp.ks --cmdline "$BOOT_ARGS" $BOOT_ISO bootc-lamp.iso
