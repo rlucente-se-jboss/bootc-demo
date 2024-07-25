@@ -267,8 +267,11 @@ filesystem image from the bootable container image we built earlier.
     sudo podman run --rm -it --privileged -v .:/output \
         -v ./config.json:/config.json --pull newer \
         registry.redhat.io/rhel9/bootc-image-builder \
-        --type qcow2 --config /config.json \
+        --type qcow2 --tls-verify=false --config /config.json \
         $CONTAINER_REPO:prod
+
+NB: If you're not using the lightweight local registry, then set the
+`--tls-verify` accordingly for your registry.
 
 You can now create a virtual guest using the QCOW2 filesystem image.
 
