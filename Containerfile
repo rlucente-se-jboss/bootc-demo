@@ -1,5 +1,9 @@
 FROM registry.redhat.io/rhel9/rhel-bootc:latest
 
+# configure an insecure local registry
+RUN  mkdir -p /etc/containers/registries.conf.d
+COPY 999-local-registry.conf /etc/containers/registries.conf.d/
+
 # install the LAMP components
 RUN dnf module enable -y php:8.2 nginx:1.22 \
     && dnf install -y httpd mariadb mariadb-server php-fpm php-mysqlnd \
