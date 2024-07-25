@@ -3,14 +3,22 @@ This project shows how to create a bootable container image with RHEL
 Image Mode and then deploy that in several ways.
 
 ## Demo setup
-Start with a minimal install of RHEL 9.4+ on either baremetal or as a
-VM. Make sure this repository is on your RHEL 9.4+ instance using either
-`git clone` or secure copy (`scp`).
+Start with a minimal install of RHEL 9.4 either on baremetal or on a
+guest VM. Use UEFI firmware, if able to, when installing your system.
 
-During RHEL installation, configure a regular user with `sudo`
-privileges on the host. These instructions assume that this repository
-is cloned or copied to your user's home directory on the host
-(e.g. `~/bootc-demo`). The below instructions use that assumption.
+Make sure to enable FIPS mode when installing RHEL as this host is used
+to generate content for the edge device which will also be configured
+in FIPS mode.  When the installer first boots, select `Install Red Hat
+Enterprise Linux 9.4` on the GRUB boot menu and then press `e` to edit
+the boot commandline. Add `fips=1` to the end of the line that begins with
+`linuxefi` and then press CTRL-X to continue booting.
+
+During RHEL installation, configure a regular user with `sudo` privileges
+on the host.
+
+These instructions assume that this repository is cloned or copied to
+your user's home directory on the host (e.g. `~/bootc-demo`). The below
+instructions follow that assumption.
 
 Login to the host using `ssh` and then run the following commands
 to create an SSH keypair that you'll use later to access the edge
@@ -25,21 +33,21 @@ Edit the `demo.conf` file and make sure the settings are correct. At a
 minimum, you should adjust the credentials for simple content access.
 The full list of options in the `demo.conf` file are shown here.
 
-| Option         | Description |
-| -------------- | ----------- |
-| SCA_USER       | Your username for Red Hat Simple Content Access |
-| SCA_PASS       | Your password for Red Hat Simple Content Access |
-| EDGE_USER      | The name of a user on the target edge device |
-| EDGE_PASS      | The plaintext password for the user on the target edge device |
-| EDGE_HASH      | A SHA-512 hash of the EDGE_PASS parameter |
-| SSH_PUB_KEY    | The SSH public key of a suer on the target edge device |
-| BOOT_ARGS      | Kernel command line arguments applied at boot time |
-| BOOT_ISO       | Minimal boot ISO used to create a custom ISO with additional kernel command line arguments and a custom kickstart file |
-| CONTAINER_REPO | The fully qualified name for your bootable container repository |
-| HOSTIP         | The routable IP address to the host |
-| HOSTPORT       | The port mapped to the web server in the bootable container for testing |
-| REGISTRYPORT   | The port for the local container registry |
-
+| Option           | Description |
+| ---------------- | ----------- |
+| SCA_USER         | Your username for Red Hat Simple Content Access |
+| SCA_PASS         | Your password for Red Hat Simple Content Access |
+| EDGE_USER        | The name of a user on the target edge device |
+| EDGE_PASS        | The plaintext password for the user on the target edge device |
+| EDGE_HASH        | A SHA-512 hash of the EDGE_PASS parameter |
+| SSH_PUB_KEY      | The SSH public key of a suer on the target edge device |
+| BOOT_ARGS        | Kernel command line arguments applied at boot time |
+| BOOT_ISO         | Minimal boot ISO used to create a custom ISO with additional kernel command line arguments and a custom kickstart file |
+| CONTAINER_REPO   | The fully qualified name for your bootable container repository |
+| HOSTIP           | The routable IP address to the host |
+| HOSTPORT         | The port mapped to the web server in the bootable container for testing |
+| REGISTRYPORT     | The port for the local container registry |
+| REGISTRYINSECURE | Boolean for whether the registry requires TLS |
 Make sure to download the `BOOT_ISO` file, e.g. [rhel-9.4-x86_64-boot.iso](https://access.redhat.com/downloads/content/rhel)
 to the local copy of this repository on your RHEL instance
 (e.g. ~/bootc-demo). Run the following script to update the system.
@@ -53,6 +61,12 @@ and ISO image tools.
     cd ~/bootc-demo
     sudo ./config-bootc.sh
 
+To ensure you can run this demo disconnected, set up a local container
+registry.
+
+    cd ~/bootc-demo
+    sudo ./config-registry.sh
+
 Login to Red Hat's container registry using your Red Hat customer portal
 credentials and then pull the container image for the base bootable
 container.
@@ -61,18 +75,11 @@ container.
     podman pull registry.redhat.io/rhel9/rhel-bootc:latest
 
 The conversion container runs as root, so you'll need to login
-as root to `registry.redhat.io` using your [Red Hat customer
-portal](https://access.redhat.com) credentials to pull the tools to
-transform into other image types.
+as root to `registry.redhat.io` using your [Red Hat customer portal](https://access.redhat.com)
+credentials to pull the tools to transform into other image types.
 
     sudo podman login registry.redhat.io
     sudo podman pull registry.redhat.io/rhel9/bootc-image-builder
-
-Now that the upstream container images are cached, run this demo
-disconnected by setting up a local container registry.
-
-    cd ~/bootc-demo
-    sudo ./config-registry.sh
 
 At this point, setup is complete.
 
@@ -135,11 +142,17 @@ removed from the host's filesystem when it stops.
 
     podman stop lamp
 
+NB: If you're using an external registry rather than the lightweight local
+one, then you'll need to also login to your registry before pushing the
+container image. The following command can help with that.
+
+    . demo.conf
+    podman login $(echo $CONTAINER_REPO | cut -d/ -f1)
+
 Now that you have a tested bootable container image, push the repository
 to your registry to make the image available to others.
 
     . demo.conf
-    podman login $(echo $CONTAINER_REPO | cut -d/ -f1)
     podman push $CONTAINER_REPO:v1
 
 Also, push this image with the `prod` tag since that's what we'll want
@@ -148,8 +161,9 @@ to run on our target edge devices.
     podman tag $CONTAINER_REPO:v1 $CONTAINER_REPO:prod
     podman push $CONTAINER_REPO:prod
 
-Make sure this container repository is publicly accessible. You may need
-to log into your registry using a browser to change the accessibility.
+NB: If you're not using the lightweight local registry, then make sure
+this container repository is publicly accessible. You may need to log
+into your registry using a browser to change the accessibility.
 
 ### Deploy the image using an ISO file
 Run the following command to generate an installable ISO file for your
