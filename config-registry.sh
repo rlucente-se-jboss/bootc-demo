@@ -12,10 +12,12 @@ firewall-cmd --reload
 
 cat > /etc/containers/registries.conf.d/999-local-registry.conf <<EOF
 [[registry]]
-insecure = true
-blocked = false
 location = "$HOSTIP:$REGISTRYPORT"
+insecure = true
 EOF
+
+# make local copy for later container build
+cp /etc/containers/registries.conf.d/999-local-registry.conf .
 
 #
 # Create quadlet for registry service
