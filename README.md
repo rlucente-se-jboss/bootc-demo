@@ -3,8 +3,10 @@ This project shows how to create a bootable container image with RHEL
 Image Mode and then deploy that in several ways.
 
 ## Demo setup
-Start with a minimal install of RHEL 9.4 either on baremetal or on a
-guest VM. Use UEFI firmware, if able to, when installing your system.
+Start with a minimal install of RHEL 9.4 either on baremetal or on a guest
+VM. Use UEFI firmware, if able to, when installing your system. Also
+make sure there's sufficient disk space on the RHEL 9.4 instance to
+support the demo. I typically configure a 128 GiB disk on the guest VM.
 
 Make sure to enable FIPS mode when installing RHEL as this host is used
 to generate content for the edge device which will also be configured
