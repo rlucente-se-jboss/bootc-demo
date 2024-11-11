@@ -6,7 +6,7 @@
 
 subscription-manager register \
     --username $SCA_USER --password $SCA_PASS || exit 1
-subscription-manager syspurpose role --set="RHEL Server"
+subscription-manager syspurpose role --set="Red Hat Enterprise Linux Server"
 subscription-manager syspurpose service-level --set="Self-Support"
 subscription-manager syspurpose usage --set="Development/Test"
 
