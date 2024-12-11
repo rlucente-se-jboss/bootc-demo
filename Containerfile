@@ -4,15 +4,12 @@ FROM registry.redhat.io/rhel9/rhel-bootc:latest
 RUN  mkdir -p /etc/containers/registries.conf.d
 COPY 999-local-registry.conf /etc/containers/registries.conf.d/
 
-# install the LAMP components
+# install the LAMP components and configure the firewall
 RUN dnf module enable -y php:8.2 nginx:1.22 \
     && dnf install -y httpd mariadb mariadb-server php-fpm php-mysqlnd \
            firewalld \
-    && dnf clean all
-
-# configure firewall on first boot
-RUN touch /etc/configure-firewall
-COPY configure-firewall.service /etc/systemd/system/
+    && dnf clean all \
+    && firewall-offline-cmd --add-service=http --add-service=ssh
 
 # start the services automatically on boot
 RUN systemctl enable httpd mariadb php-fpm sshd firewalld configure-firewall
