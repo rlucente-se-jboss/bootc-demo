@@ -19,7 +19,9 @@ xmlstarlet sel -N "xccdf=http://checklists.nist.gov/xccdf/1.2" \
   /usr/share/xml/scap/ssg/content/ssg-rhel9-ds.xml | sort -u > $SELECTED_STIG_RULES
 
 #
-# only enable the CAT I STIG rules
+# only enable the CAT I (high severity) STIG rules. the comm command
+# finds the intersection of both sets, e.g. rules that are both CAT I and
+# pre-selected for the DISA STIG.
 #
 RULES=( \
     $(comm -12 $HIGH_RULES_ONLY $SELECTED_STIG_RULES)
@@ -38,7 +40,7 @@ autotailor \
 EOF
 
 #
-# disable all the rules in the STIG profile
+# first, disable all the rules in the STIG profile
 #
 for i in $(xmlstarlet sel -N "xccdf=http://checklists.nist.gov/xccdf/1.2" \
   -t -v \
@@ -49,7 +51,7 @@ do
 done
 
 #
-# enable only these rules
+# then, enable only the rules that were pre-selected and CAT I
 #
 for rule in ${RULES[@]}
 do
